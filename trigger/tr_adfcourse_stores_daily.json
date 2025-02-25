@@ -2,7 +2,7 @@
 	"name": "tr_adfcourse_stores_daily",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {
