@@ -1,0 +1,123 @@
+{
+	"name": "pl_adfcourse_order_items_sftp_to_dls",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy order items sftp to dls",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:10:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "SftpReadSettings",
+							"recursive": true,
+							"wildcardFileName": "*.txt",
+							"enablePartitionDiscovery": false,
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"enableSkipIncompatibleRow": true,
+					"logSettings": {
+						"enableCopyActivityLog": true,
+						"copyActivityLogSettings": {
+							"logLevel": "Warning",
+							"enableReliableLogging": false
+						},
+						"logLocationSettings": {
+							"linkedServiceName": {
+								"referenceName": "ls_adfcourse_dls_logging",
+								"type": "LinkedServiceReference"
+							},
+							"path": "logs"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "ORDER_ID",
+									"type": "Int64"
+								},
+								"sink": {
+									"path": "$['ORDER_ID']"
+								}
+							},
+							{
+								"source": {
+									"name": "LINE_ITEM_ID",
+									"type": "Int64"
+								},
+								"sink": {
+									"path": "$['LINE_ITEM_ID']"
+								}
+							},
+							{
+								"source": {
+									"name": "PRODUCT_ID",
+									"type": "Int64"
+								},
+								"sink": {
+									"path": "$['PRODUCT_ID']"
+								}
+							},
+							{
+								"source": {
+									"name": "UNIT_PRICE",
+									"type": "Double"
+								},
+								"sink": {
+									"path": "$['UNIT_PRICE']"
+								}
+							},
+							{
+								"source": {
+									"name": "QUANTITY",
+									"type": "Int64"
+								},
+								"sink": {
+									"path": "$['QUANTITY']"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_adfcourse_sftp_outbound_order_items",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_adfcours_dls_inbound_order_items",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

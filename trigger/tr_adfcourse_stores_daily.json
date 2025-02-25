@@ -1,0 +1,32 @@
+{
+	"name": "tr_adfcourse_stores_daily",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pl_adfcourse_stores_dls_to_sftp",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2025-02-25T13:31:00",
+				"timeZone": "W. Europe Standard Time",
+				"schedule": {
+					"minutes": [
+						35
+					],
+					"hours": [
+						14
+					]
+				}
+			}
+		}
+	}
+}

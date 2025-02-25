@@ -1,0 +1,30 @@
+{
+	"name": "ds_adfcourse_dls_inbound_standardized_stores",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adfcourse_dls",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TargetFolder": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "adfcourse_stores"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "stores/standardized/@{dataset().TargetFolder}",
+					"type": "Expression"
+				},
+				"fileSystem": "inbound"
+			}
+		},
+		"schema": {}
+	}
+}
