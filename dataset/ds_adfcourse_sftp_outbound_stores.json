@@ -1,0 +1,45 @@
+{
+	"name": "ds_adfcourse_sftp_outbound_stores",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adfcourse_sftp_outbound",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"StoresFolder": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation",
+				"folderPath": {
+					"value": "@dataset().StoresFolder",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"STORE_ID": {
+					"type": "string"
+				},
+				"STORE_NAME": {
+					"type": "string"
+				},
+				"WEB_ADDRESS": {
+					"type": "string"
+				},
+				"LATITUDE": {
+					"type": "string"
+				},
+				"LONGITUDE": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

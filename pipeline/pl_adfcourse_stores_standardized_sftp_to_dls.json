@@ -1,0 +1,72 @@
+{
+	"name": "pl_adfcourse_stores_standardized_sftp_to_dls",
+	"properties": {
+		"activities": [
+			{
+				"name": "Sftp Stores to Dls Stores Standardized",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_adfcourse_standardize_stores_sftp_to_dls",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"ADFCourseSftpStores": {
+								"StoresFolder": "stores/Online"
+							},
+							"ADFCourseDlsStandardizedStores": {
+								"TargetFolder": "online"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Sftp Customer Orders Stores to Dls Stores standardized",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_adfcourse_standardize_stores_sftp_to_dls",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"ADFCourseSftpStores": {
+								"StoresFolder": "landing_customer_orders/stores"
+							},
+							"ADFCourseDlsStandardizedStores": {
+								"TargetFolder": "customer"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
