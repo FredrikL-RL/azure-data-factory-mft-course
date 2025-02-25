@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-adfcourse-fl-dev"
+		},
+		"ls_adfcourse_dls_properties_typeProperties_url": {
+			"value": "https://dlsadfcoursefldev001.dfs.core.windows.net/"
+		},
+		"ls_adfcourse_dls_logging_properties_typeProperties_url": {
+			"value": "https://dlsadfcourselogfldev001.dfs.core.windows.net/"
+		},
+		"ls_adfcourse_kv_properties_typeProperties_baseUrl": {
+			"value": "https://kv-adfcourse-fl-dev-001.vault.azure.net/"
+		},
+		"ls_adfcourse_sftp_inbound_properties_typeProperties_host": {
+			"value": "stadfcoursesftpfldev001.blob.core.windows.net"
+		},
+		"ls_adfcourse_sftp_inbound_properties_typeProperties_userName": {
+			"value": "stadfcoursesftpfldev001.inbound.adfcourse"
+		},
+		"ls_adfcourse_sftp_outbound_properties_typeProperties_host": {
+			"value": "stadfcoursesftpfldev001.blob.core.windows.net"
+		},
+		"ls_adfcourse_sftp_outbound_properties_typeProperties_userName": {
+			"value": "stadfcoursesftpfldev001.outbound.adfcourse"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

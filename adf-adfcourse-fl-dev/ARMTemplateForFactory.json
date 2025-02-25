@@ -1,0 +1,772 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-adfcourse-fl-dev"
+		},
+		"ls_adfcourse_dls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dlsadfcoursefldev001.dfs.core.windows.net/"
+		},
+		"ls_adfcourse_dls_logging_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dlsadfcourselogfldev001.dfs.core.windows.net/"
+		},
+		"ls_adfcourse_kv_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-adfcourse-fl-dev-001.vault.azure.net/"
+		},
+		"ls_adfcourse_sftp_inbound_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "stadfcoursesftpfldev001.blob.core.windows.net"
+		},
+		"ls_adfcourse_sftp_inbound_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "stadfcoursesftpfldev001.inbound.adfcourse"
+		},
+		"ls_adfcourse_sftp_outbound_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "stadfcoursesftpfldev001.blob.core.windows.net"
+		},
+		"ls_adfcourse_sftp_outbound_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "stadfcoursesftpfldev001.outbound.adfcourse"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_adfcourse_fail')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Fail1",
+						"type": "Fail",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"message": "Test Failure",
+							"errorCode": "Test Error Code"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_adfcourse_order_items_sftp_to_dls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy order items sftp to dls",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "SftpReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*.txt",
+									"enablePartitionDiscovery": false,
+									"disableChunking": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"enableSkipIncompatibleRow": true,
+							"logSettings": {
+								"enableCopyActivityLog": true,
+								"copyActivityLogSettings": {
+									"logLevel": "Warning",
+									"enableReliableLogging": false
+								},
+								"logLocationSettings": {
+									"linkedServiceName": {
+										"referenceName": "ls_adfcourse_dls_logging",
+										"type": "LinkedServiceReference"
+									},
+									"path": "logs"
+								}
+							},
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "ORDER_ID",
+											"type": "Int64"
+										},
+										"sink": {
+											"path": "$['ORDER_ID']"
+										}
+									},
+									{
+										"source": {
+											"name": "LINE_ITEM_ID",
+											"type": "Int64"
+										},
+										"sink": {
+											"path": "$['LINE_ITEM_ID']"
+										}
+									},
+									{
+										"source": {
+											"name": "PRODUCT_ID",
+											"type": "Int64"
+										},
+										"sink": {
+											"path": "$['PRODUCT_ID']"
+										}
+									},
+									{
+										"source": {
+											"name": "UNIT_PRICE",
+											"type": "Double"
+										},
+										"sink": {
+											"path": "$['UNIT_PRICE']"
+										}
+									},
+									{
+										"source": {
+											"name": "QUANTITY",
+											"type": "Int64"
+										},
+										"sink": {
+											"path": "$['QUANTITY']"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_adfcourse_sftp_outbound_order_items",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_adfcours_dls_inbound_order_items",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_adfcourse_sftp_outbound_order_items')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adfcours_dls_inbound_order_items')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_dls_logging')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_adfcourse_stores_dls_to_sftp')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy stores from dls to sftp",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:10:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*.json",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "SftpWriteSettings",
+									"operationTimeout": "01:00:00",
+									"useTempFileRename": true
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_adfcourse_dls_outbound_stores",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_adfcourse_sftp_inbound_stores",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_adfcourse_dls_outbound_stores')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adfcourse_sftp_inbound_stores')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_adfcourse_stores_standardized_sftp_to_dls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Sftp Stores to Dls Stores Standardized",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_adfcourse_standardize_stores_sftp_to_dls",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ADFCourseSftpStores": {
+										"StoresFolder": "stores/Online"
+									},
+									"ADFCourseDlsStandardizedStores": {
+										"TargetFolder": "online"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Sftp Customer Orders Stores to Dls Stores standardized",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_adfcourse_standardize_stores_sftp_to_dls",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ADFCourseSftpStores": {
+										"StoresFolder": "landing_customer_orders/stores"
+									},
+									"ADFCourseDlsStandardizedStores": {
+										"TargetFolder": "customer"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_adfcourse_standardize_stores_sftp_to_dls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adfcours_dls_inbound_order_items')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adfcourse_dls",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "adfcourse_order_items"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "order_items",
+						"fileSystem": "inbound"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_dls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adfcourse_dls_inbound_standardized_stores')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adfcourse_dls",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TargetFolder": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "adfcourse_stores"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "stores/standardized/@{dataset().TargetFolder}",
+							"type": "Expression"
+						},
+						"fileSystem": "inbound"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_dls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adfcourse_dls_outbound_stores')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adfcourse_dls",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "adfcourse_stores"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "stores/@{utcNow('yyyy-MM-dd')}",
+							"type": "Expression"
+						},
+						"fileSystem": "outbound"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_dls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adfcourse_sftp_inbound_stores')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adfcourse_sftp_inbound",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "adfcourse_stores"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "SftpLocation",
+						"folderPath": {
+							"value": "/stores/@{utcNow('yyyy-MM-dd')}",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_sftp_inbound')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adfcourse_sftp_outbound_order_items')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adfcourse_sftp_outbound",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "adfcourse_order_items"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "SftpLocation",
+						"folderPath": "/landing_customer_orders"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_sftp_outbound')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adfcourse_sftp_outbound_stores')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adfcourse_sftp_outbound",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"StoresFolder": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "adfcourse_stores"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "SftpLocation",
+						"folderPath": {
+							"value": "@dataset().StoresFolder",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"STORE_ID": {
+							"type": "string"
+						},
+						"STORE_NAME": {
+							"type": "string"
+						},
+						"WEB_ADDRESS": {
+							"type": "string"
+						},
+						"LATITUDE": {
+							"type": "string"
+						},
+						"LONGITUDE": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_sftp_outbound')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adfcourse_dls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adfcourse_dls_properties_typeProperties_url')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adfcourse_dls_logging')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adfcourse_dls_logging_properties_typeProperties_url')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adfcourse_kv')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('ls_adfcourse_kv_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adfcourse_sftp_inbound')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "Sftp",
+				"typeProperties": {
+					"host": "[parameters('ls_adfcourse_sftp_inbound_properties_typeProperties_host')]",
+					"port": 22,
+					"skipHostKeyValidation": true,
+					"authenticationType": "Basic",
+					"userName": "[parameters('ls_adfcourse_sftp_inbound_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_adfcourse_kv",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "adf-course-sftp-ssh-pwd"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_kv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adfcourse_sftp_outbound')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "Sftp",
+				"typeProperties": {
+					"host": "[parameters('ls_adfcourse_sftp_outbound_properties_typeProperties_host')]",
+					"port": 22,
+					"skipHostKeyValidation": true,
+					"authenticationType": "Basic",
+					"userName": "[parameters('ls_adfcourse_sftp_outbound_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_adfcourse_kv",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "adf-course-sftp-ssh-pwd"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adfcourse_kv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_adfcourse_stores_daily')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_adfcourse_stores_dls_to_sftp",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2025-02-25T13:31:00",
+						"timeZone": "W. Europe Standard Time",
+						"schedule": {
+							"minutes": [
+								35
+							],
+							"hours": [
+								14
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_adfcourse_stores_dls_to_sftp')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_adfcourse_standardize_stores_sftp_to_dls')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_adfcourse_sftp_outbound_stores",
+								"type": "DatasetReference"
+							},
+							"name": "ADFCourseSftpStores"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_adfcourse_dls_inbound_standardized_stores",
+								"type": "DatasetReference"
+							},
+							"name": "ADFCourseDlsStandardizedStores"
+						}
+					],
+					"transformations": [
+						{
+							"name": "RemoveStoreId"
+						},
+						{
+							"name": "CoordinatesToDoubles"
+						},
+						{
+							"name": "AddUpdatedTimestamp"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          STORE_ID as string,",
+						"          STORE_NAME as string,",
+						"          WEB_ADDRESS as string,",
+						"          LATITUDE as string,",
+						"          LONGITUDE as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'documentPerLine') ~> ADFCourseSftpStores",
+						"ADFCourseSftpStores select(mapColumn(",
+						"          STORE_NAME,",
+						"          WEB_ADDRESS,",
+						"          LATITUDE,",
+						"          LONGITUDE",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RemoveStoreId",
+						"RemoveStoreId cast(output(",
+						"          STORE_NAME as string,",
+						"          WEB_ADDRESS as string,",
+						"          LATITUDE as double,",
+						"          LONGITUDE as double",
+						"     ),",
+						"     errors: true) ~> CoordinatesToDoubles",
+						"CoordinatesToDoubles derive(UPDATED_TIMESTAMP = currentUTC()) ~> AddUpdatedTimestamp",
+						"AddUpdatedTimestamp sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> ADFCourseDlsStandardizedStores"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_adfcourse_sftp_outbound_stores')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adfcourse_dls_inbound_standardized_stores')]"
+			]
+		}
+	]
+}
