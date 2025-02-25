@@ -1,0 +1,25 @@
+{
+	"name": "ds_adfcourse_sftp_outbound_order_items",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adfcourse_sftp_outbound",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "adfcourse_order_items"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation",
+				"folderPath": "/landing_customer_orders"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

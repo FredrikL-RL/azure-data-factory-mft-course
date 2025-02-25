@@ -10,12 +10,18 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "adfcourse_stores"
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "stores/standardized/@{dataset().TargetFolder}",
+				"folderPath": {
+					"value": "stores/standardized/@{dataset().TargetFolder}",
+					"type": "Expression"
+				},
 				"fileSystem": "inbound"
 			}
 		},

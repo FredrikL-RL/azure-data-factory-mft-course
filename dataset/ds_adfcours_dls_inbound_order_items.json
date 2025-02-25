@@ -1,23 +1,20 @@
 {
-	"name": "ds_adfcourse_dls_outbound_stores",
+	"name": "ds_adfcours_dls_inbound_order_items",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_adfcourse_dls",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "adfcourse_stores"
+			"name": "adfcourse_order_items"
 		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": {
-					"value": "stores/@{utcNow('yyyy-MM-dd')}",
-					"type": "Expression"
-				},
-				"fileSystem": "outbound"
+				"folderPath": "order_items",
+				"fileSystem": "inbound"
 			}
 		},
 		"schema": {}

@@ -10,6 +10,9 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "adfcourse_stores"
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {

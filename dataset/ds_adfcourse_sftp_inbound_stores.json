@@ -5,12 +5,18 @@
 			"referenceName": "ls_adfcourse_sftp_inbound",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "adfcourse_stores"
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "SftpLocation",
-				"folderPath": "/stores/@{utcNow('yyyy-MM-dd')}"
+				"folderPath": {
+					"value": "/stores/@{utcNow('yyyy-MM-dd')}",
+					"type": "Expression"
+				}
 			}
 		},
 		"schema": {}
