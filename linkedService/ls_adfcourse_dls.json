@@ -1,0 +1,10 @@
+{
+	"name": "ls_adfcourse_dls",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://dlsadfcoursefldev001.dfs.core.windows.net/"
+		}
+	}
+}
