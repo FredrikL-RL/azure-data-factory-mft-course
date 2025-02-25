@@ -1,0 +1,18 @@
+{
+	"name": "ds_adfcourse_sftp_inbound_stores",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adfcourse_sftp_inbound",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation",
+				"folderPath": "/stores/@{utcNow('yyyy-MM-dd')}"
+			}
+		},
+		"schema": {}
+	}
+}
