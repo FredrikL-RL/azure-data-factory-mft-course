@@ -1,0 +1,10 @@
+{
+	"name": "ls_kv_adfcourse",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kv-adfcourse-fl-dev-001.vault.azure.net/"
+		}
+	}
+}
