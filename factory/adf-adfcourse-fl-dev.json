@@ -1,0 +1,9 @@
+{
+	"name": "adf-adfcourse-fl-dev",
+	"location": "swedencentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "2fb12fb4-1ed1-4e8d-94e6-56c51e827881",
+		"tenantId": "c71c90ed-8723-49f8-a959-474acc70e81a"
+	}
+}
