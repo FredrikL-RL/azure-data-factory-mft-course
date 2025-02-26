@@ -1,19 +1,30 @@
 {
 	"name": "ls_adfcourse_sftp_inbound",
 	"properties": {
+		"parameters": {
+			"env": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"type": "Sftp",
 		"typeProperties": {
-			"host": "stadfcoursesftpfldev001.blob.core.windows.net",
+			"host": "stadfcoursesftpfl@{linkedService().env}001.blob.core.windows.net",
 			"port": 22,
 			"skipHostKeyValidation": true,
 			"authenticationType": "Basic",
-			"userName": "stadfcoursesftpfldev001.inbound.adfcourse",
+			"userName": "stadfcoursesftpfl@{linkedService().env}001.inbound.adfcourse",
 			"password": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
 					"referenceName": "ls_adfcourse_kv",
-					"type": "LinkedServiceReference"
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"env": {
+							"value": "@linkedService().env",
+							"type": "Expression"
+						}
+					}
 				},
 				"secretName": "adf-course-sftp-ssh-pwd"
 			}
