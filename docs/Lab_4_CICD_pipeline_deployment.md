@@ -9,6 +9,9 @@ Implement cross-environment deployment
 - ARM Parametrization
 - Pre/post-deployment scripts: Disabling triggers, deleting old resources
 
+## Prerequisites
+- duplicate setup in lab 1, 3 for test. DLS, DLSlogs accessess, SFTP user and key vault secret and access.
+
 ## Steps
 
 ### 1. Create Global Parameter and prepare for CI/CD
