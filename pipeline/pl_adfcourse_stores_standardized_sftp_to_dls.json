@@ -20,7 +20,7 @@
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"ADFCourseSftpStores": {
-								"StoresFolder": "stores/Online"
+								"StoresFolder": "stores/@{utcNow('yyyy-MM-dd')}/Online"
 							},
 							"ADFCourseDlsStandardizedStores": {
 								"TargetFolder": "online"
