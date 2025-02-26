@@ -1,0 +1,69 @@
+name: ADF CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  AZURE_RESOURCE_GROUP: "rg-adfcourse-fredrik"
+  ADF_NAME: "adf-adfcourse-fl"
+  AZURE_SUBSCRIPTION_ID: "2bbb005e-a4a1-44ce-80c2-07368f895014"
+  SAVED_ARTIFACT_NAME: "ArmTemplates"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ADF CI
+        uses: ./.github/actions/CI
+        with:
+          AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
+          ADF_NAME: ${{ env.ADF_NAME }}
+          AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          SAVED_ARTIFACT_NAME: ${{ env.SAVED_ARTIFACT_NAME }}
+          ENV: dev
+
+  cd-dev:
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+      - name: Run ADF CD For DEV
+        uses: ./.github/actions/CD
+        with:
+          AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
+          ADF_NAME: ${{ env.ADF_NAME }}
+          AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          DOWNLOADED_ARTIFACT_NAME: ${{ env.SAVED_ARTIFACT_NAME }}
+          ENV: dev
+  
+  cd-test:
+    needs: cd-dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+      - name: Run ADF CD For TEST
+        uses: ./.github/actions/CD
+        with:
+          AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
+          ADF_NAME: ${{ env.ADF_NAME }}
+          AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          DOWNLOADED_ARTIFACT_NAME: ${{ env.SAVED_ARTIFACT_NAME }}
+          ENV: test

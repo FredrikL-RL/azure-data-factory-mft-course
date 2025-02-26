@@ -1,0 +1,47 @@
+name: 'ADF CI'
+description: 'runs ci'
+inputs:
+  SAVED_ARTIFACT_NAME:
+    required: true
+    type: string
+  AZURE_RESOURCE_GROUP:
+    required: true
+    type: string
+  ADF_NAME:
+    required: true
+    type: string
+  AZURE_SUBSCRIPTION_ID:
+    required: true
+    type: string
+  ENV:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: Install npm package
+      shell: bash
+      run: npm install
+      working-directory: ${{ github.workspace }}/automation_build
+
+    - name: Validate
+      shell: bash
+      run: npm run build validate ${{ github.workspace }}/ /subscriptions/${{ inputs.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.AZURE_RESOURCE_GROUP }}/providers/Microsoft.DataFactory/factories/${{ inputs.ADF_NAME }}-${{ inputs.ENV }}
+      working-directory: ${{ github.workspace }}/automation_build
+
+    - name: Validate and Generate ARM template
+      shell: bash
+      run: npm run build export ${{ github.workspace }}/ /subscriptions/${{ inputs.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.AZURE_RESOURCE_GROUP }}/providers/Microsoft.DataFactory/factories/${{ inputs.ADF_NAME }}-${{ inputs.ENV }} "ArmTemplate"
+      working-directory: ${{ github.workspace }}/automation_build
+
+    - name: Upload ARM template artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.SAVED_ARTIFACT_NAME }}
+        path: ${{ github.workspace }}/automation_build/ArmTemplate

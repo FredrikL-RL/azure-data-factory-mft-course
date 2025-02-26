@@ -3,10 +3,19 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_adfcourse_dls",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"env": {
+					"value": "@dataset().env",
+					"type": "Expression"
+				}
+			}
 		},
 		"parameters": {
 			"TargetFolder": {
+				"type": "String"
+			},
+			"env": {
 				"type": "String"
 			}
 		},

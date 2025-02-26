@@ -1,10 +1,15 @@
 {
 	"name": "ls_adfcourse_kv",
 	"properties": {
+		"parameters": {
+			"env": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"type": "AzureKeyVault",
 		"typeProperties": {
-			"baseUrl": "https://kv-adfcourse-fl-dev-001.vault.azure.net/"
+			"baseUrl": "https://kv-adfcourse-fl-@{linkedService().env}-001.vault.azure.net/"
 		}
 	}
 }

@@ -1,5 +1,13 @@
 {
 	"name": "adf-adfcourse-fl-dev",
+	"properties": {
+		"globalParameters": {
+			"environment": {
+				"type": "string",
+				"value": "dev"
+			}
+		}
+	},
 	"location": "swedencentral",
 	"identity": {
 		"type": "SystemAssigned",

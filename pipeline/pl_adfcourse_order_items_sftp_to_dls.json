@@ -107,13 +107,25 @@
 				"inputs": [
 					{
 						"referenceName": "ds_adfcourse_sftp_outbound_order_items",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"env": {
+								"value": "@pipeline().globalParameters.environment",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
 					{
 						"referenceName": "ds_adfcours_dls_inbound_order_items",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"env": {
+								"value": "@pipeline().globalParameters.environment",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			}
