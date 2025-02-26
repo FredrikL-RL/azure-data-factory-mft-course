@@ -20,10 +20,18 @@
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"ADFCourseSftpStores": {
-								"StoresFolder": "stores/Online"
+								"StoresFolder": "stores/Online",
+								"env": {
+									"value": "@pipeline().globalParameters.environment",
+									"type": "Expression"
+								}
 							},
 							"ADFCourseDlsStandardizedStores": {
-								"TargetFolder": "online"
+								"TargetFolder": "online",
+								"env": {
+									"value": "@pipeline().globalParameters.environment",
+									"type": "Expression"
+								}
 							}
 						}
 					},
@@ -52,10 +60,18 @@
 						"type": "DataFlowReference",
 						"datasetParameters": {
 							"ADFCourseSftpStores": {
-								"StoresFolder": "landing_customer_orders/stores"
+								"StoresFolder": "landing_customer_orders/stores",
+								"env": {
+									"value": "@pipeline().globalParameters.environment",
+									"type": "Expression"
+								}
 							},
 							"ADFCourseDlsStandardizedStores": {
-								"TargetFolder": "customer"
+								"TargetFolder": "customer",
+								"env": {
+									"value": "@pipeline().globalParameters.environment",
+									"type": "Expression"
+								}
 							}
 						}
 					},

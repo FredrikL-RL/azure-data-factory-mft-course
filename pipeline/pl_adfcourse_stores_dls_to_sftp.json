@@ -43,13 +43,25 @@
 				"inputs": [
 					{
 						"referenceName": "ds_adfcourse_dls_outbound_stores",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"env": {
+								"value": "@pipeline().globalParameters.environment",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
 					{
 						"referenceName": "ds_adfcourse_sftp_inbound_stores",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"env": {
+								"value": "@pipeline().globalParameters.environment",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			}

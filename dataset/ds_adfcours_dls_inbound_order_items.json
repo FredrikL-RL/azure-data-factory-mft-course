@@ -3,7 +3,18 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_adfcourse_dls",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"env": {
+					"value": "@dataset().env",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"env": {
+				"type": "String"
+			}
 		},
 		"folder": {
 			"name": "adfcourse_order_items"
