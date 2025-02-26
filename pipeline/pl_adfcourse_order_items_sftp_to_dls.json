@@ -48,7 +48,13 @@
 						"logLocationSettings": {
 							"linkedServiceName": {
 								"referenceName": "ls_adfcourse_dls_logging",
-								"type": "LinkedServiceReference"
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"env": {
+										"value": "@pipeline().globalParameters.environment",
+										"type": "Expression"
+									}
+								}
 							},
 							"path": "logs"
 						}
