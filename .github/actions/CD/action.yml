@@ -1,0 +1,95 @@
+name: ADF CD
+
+inputs:
+  DOWNLOADED_ARTIFACT_NAME:
+    required: true
+    type: string
+  AZURE_RESOURCE_GROUP:
+    required: true
+    type: string
+  ADF_NAME:
+    required: true
+    type: string
+  AZURE_SUBSCRIPTION_ID:
+    required: true
+    type: string
+  ENV:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download ARM template artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.DOWNLOADED_ARTIFACT_NAME }}
+        path: ./ArmTemplate
+
+    - name: Update factory name for test
+      shell: bash
+      run: |
+        FACTORY_NAME=${{ inputs.ADF_NAME }}-${{ inputs.ENV }}
+        jq '.parameters.factoryName.value = $FACTORY_NAME' \
+        --arg FACTORY_NAME "$FACTORY_NAME" \
+        ./ArmTemplate/ARMTemplateParametersForFactory.json > temp.json && mv temp.json ./ArmTemplate/ARMTemplateParametersForFactory.json
+    
+    - name: Update Global environment variable
+      shell: bash
+      run: |
+        DEPLOYMENT_ENV=${{ inputs.ENV }}
+        jq '.environment.value = $DEPLOYMENT_ENV' \
+        --arg DEPLOYMENT_ENV "$DEPLOYMENT_ENV" \
+        ./ArmTemplate/${{ inputs.ADF_NAME }}-dev_GlobalParameters.json > temp.json && mv temp.json ./ArmTemplate/${{ inputs.ADF_NAME }}-dev_GlobalParameters.json
+    
+    - name: Stop ADF Triggers
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: "latest"
+        inlineScript: |
+          ./ArmTemplate/PrePostDeploymentScript.ps1 `
+            -armTemplate "./ArmTemplate/ARMTemplateForFactory.json" `
+            -ResourceGroupName "${{ inputs.AZURE_RESOURCE_GROUP }}-${{ inputs.ENV }}" `
+            -DataFactoryName "${{ inputs.ADF_NAME }}-${{ inputs.ENV }}" `
+            -predeployment $true `
+            -deleteDeployment $false `
+            -ArmTemplateParameters "./ArmTemplate/ARMTemplateParametersForFactory.json"
+
+    - name: Deploy to Azure Data Factory
+      uses: azure/arm-deploy@v1
+      with:
+        subscriptionId: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ inputs.AZURE_RESOURCE_GROUP }}-${{ inputs.ENV }}
+        template: ./ArmTemplate/ARMTemplateForFactory.json
+        parameters:  >
+          ./ArmTemplate/ARMTemplateParametersForFactory.json
+          factoryName=${{ inputs.ADF_NAME }}-${{ inputs.ENV }}
+    
+    - name: Update Global Parameters
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: "latest"
+        inlineScript: |
+          ./ArmTemplate/GlobalParametersUpdateScript.ps1 `
+          -globalParametersFilePath "./ArmTemplate/${{ inputs.ADF_NAME }}-dev_GlobalParameters.json" `
+          -resourceGroupName "${{ inputs.AZURE_RESOURCE_GROUP }}-${{ inputs.ENV }}" `
+          -dataFactoryName "${{ inputs.ADF_NAME }}-${{ inputs.ENV }}"
+
+    - name: Start ADF Triggers and Clean Up
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: "latest"
+        inlineScript: |
+          ./ArmTemplate/PrePostDeploymentScript.ps1 `
+            -armTemplate "./ArmTemplate/ARMTemplateForFactory.json" `
+            -ResourceGroupName "${{ inputs.AZURE_RESOURCE_GROUP }}-${{ inputs.ENV }}" `
+            -DataFactoryName "${{ inputs.ADF_NAME }}-${{ inputs.ENV }}" `
+            -predeployment $false `
+            -deleteDeployment $true `
+            -ArmTemplateParameters "./ArmTemplate/ARMTemplateParametersForFactory.json"
+
+    - name: Post-deployment validation
+      shell: bash
+      run: |
+        # Add any post-deployment validation steps here
+        echo "Deployment to Dev ADF completed successfully"
