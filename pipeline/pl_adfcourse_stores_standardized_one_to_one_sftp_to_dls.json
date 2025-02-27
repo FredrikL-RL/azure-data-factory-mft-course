@@ -1,0 +1,156 @@
+{
+	"name": "pl_adfcourse_stores_standardized_one_to_one_sftp_to_dls",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Stores Files",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_adfcourse_sftp_outbound_stores",
+						"type": "DatasetReference",
+						"parameters": {
+							"StoresFolder": {
+								"value": "@pipeline().parameters.StoresFolderSrc",
+								"type": "Expression"
+							},
+							"env": {
+								"value": "@pipeline().globalParameters.environment",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "SftpReadSettings",
+						"enablePartitionDiscovery": false,
+						"disableChunking": false
+					},
+					"formatSettings": {
+						"type": "JsonReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Only json files",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get Stores Files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Stores Files').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@endswith(item().name, '.json')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Standardize json with same name",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Only json files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Only json files').output.Value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Data flow standardize 1 to 1",
+							"type": "ExecuteDataFlow",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataflow": {
+									"referenceName": "df_adfcourse_standardize_stores_11_sftp_to_dls",
+									"type": "DataFlowReference",
+									"parameters": {
+										"OutputFileName": {
+											"value": "'@{item().name}'",
+											"type": "Expression"
+										}
+									},
+									"datasetParameters": {
+										"ADFCourseSftpStores": {
+											"StoresFolder": {
+												"value": "@pipeline().parameters.StoresFolderSrc",
+												"type": "Expression"
+											},
+											"env": {
+												"value": "@pipeline().globalParameters.environment",
+												"type": "Expression"
+											},
+											"StoresFile": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										},
+										"ADFCourseDlsStandardizedStores": {
+											"TargetFolder": {
+												"value": "@pipeline().parameters.StoresFolderDest",
+												"type": "Expression"
+											},
+											"env": {
+												"value": "@pipeline().globalParameters.environment",
+												"type": "Expression"
+											}
+										}
+									}
+								},
+								"compute": {
+									"coreCount": 8,
+									"computeType": "General"
+								},
+								"traceLevel": "Fine"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"StoresFolderSrc": {
+				"type": "string"
+			},
+			"StoresFolderDest": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
