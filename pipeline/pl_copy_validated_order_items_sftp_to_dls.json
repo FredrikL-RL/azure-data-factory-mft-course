@@ -1,0 +1,234 @@
+{
+	"name": "pl_copy_validated_order_items_sftp_to_dls",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get landing_customer_order",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_adfcourse_sftp_outbound_order_items",
+						"type": "DatasetReference",
+						"parameters": {
+							"env": {
+								"value": "@pipeline().globalParameters.environment",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "SftpReadSettings",
+						"enablePartitionDiscovery": false,
+						"disableChunking": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Only txt",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get landing_customer_order",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get landing_customer_order').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@endswith(item().name, 'txt')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "For each txt validate",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Only txt",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Only txt').output.Value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get column count",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "ds_adfcourse_sftp_outbound_order_items_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"env": {
+											"value": "@pipeline().globalParameters.environment",
+											"type": "Expression"
+										},
+										"FilePath": {
+											"value": "@concat(pipeline().parameters.OrderItemsFolder, '/', item().name)",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"columnCount",
+									"itemName"
+								],
+								"storeSettings": {
+									"type": "SftpReadSettings",
+									"enablePartitionDiscovery": false,
+									"disableChunking": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							}
+						},
+						{
+							"name": "Only files with correct column count",
+							"type": "Filter",
+							"dependsOn": [
+								{
+									"activity": "Get column count",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"items": {
+									"value": "@createArray(activity('Get column count').output.itemName)",
+									"type": "Expression"
+								},
+								"condition": {
+									"value": "@equals(activity('Get column count').output.columnCount, pipeline().parameters.OrderItemsColumnCount)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Copy validated order items",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Only files with correct column count",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "SftpReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false,
+										"disableChunking": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_adfcourse_sftp_outbound_order_items_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"env": {
+											"value": "@pipeline().globalParameters.environment",
+											"type": "Expression"
+										},
+										"FilePath": {
+											"value": "@activity('Only files with correct column count').output.Value[0]",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adfcours_dls_inbound_order_items",
+									"type": "DatasetReference",
+									"parameters": {
+										"env": {
+											"value": "@pipeline().globalParameters.environment",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"OrderItemsFolder": {
+				"type": "string",
+				"defaultValue": "landing_customer_orders"
+			},
+			"OrderItemsColumnCount": {
+				"type": "int",
+				"defaultValue": 5
+			}
+		},
+		"annotations": []
+	}
+}
