@@ -1,0 +1,42 @@
+{
+	"name": "ds_adfcourse_sftp_outbound_order_items_file",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adfcourse_sftp_outbound",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"env": {
+					"value": "@dataset().env",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"env": {
+				"type": "String"
+			},
+			"FilePath": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "adfcourse_order_items"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation",
+				"fileName": {
+					"value": "@dataset().FilePath",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
