@@ -1,0 +1,79 @@
+{
+	"name": "df_adfcourse_standardize_stores_11_sftp_to_dls",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_adfcourse_sftp_outbound_stores_file",
+						"type": "DatasetReference"
+					},
+					"name": "ADFCourseSftpStores"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_adfcourse_dls_inbound_standardized_stores",
+						"type": "DatasetReference"
+					},
+					"name": "ADFCourseDlsStandardizedStores"
+				}
+			],
+			"transformations": [
+				{
+					"name": "RemoveStoreId"
+				},
+				{
+					"name": "CoordinatesToDoubles"
+				},
+				{
+					"name": "AddUpdatedTimestamp"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     OutputFileName as string",
+				"}",
+				"source(output(",
+				"          STORE_ID as string,",
+				"          STORE_NAME as string,",
+				"          WEB_ADDRESS as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine',",
+				"     partitionBy('hash', 1)) ~> ADFCourseSftpStores",
+				"ADFCourseSftpStores select(mapColumn(",
+				"          STORE_NAME,",
+				"          WEB_ADDRESS,",
+				"          LATITUDE,",
+				"          LONGITUDE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RemoveStoreId",
+				"RemoveStoreId cast(output(",
+				"          STORE_NAME as string,",
+				"          WEB_ADDRESS as string,",
+				"          LATITUDE as double,",
+				"          LONGITUDE as double",
+				"     ),",
+				"     errors: true) ~> CoordinatesToDoubles",
+				"CoordinatesToDoubles derive(UPDATED_TIMESTAMP = currentUTC()) ~> AddUpdatedTimestamp",
+				"AddUpdatedTimestamp sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:[($OutputFileName)],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> ADFCourseDlsStandardizedStores"
+			]
+		}
+	}
+}
