@@ -21,7 +21,7 @@ Build triggered secure data lake storage → SFTP pipelines with error handling
 
 ### 1. Configure IAM Permissions
 - Go into IAM for dlsadfcoursenamedev001
-- Give storage blob contributor and storage blob data reader roles to data factory
+- Give storage blob data contributor and storage blob data reader roles to data factory
 
 ### 2. SFTP User Setup
 - Go into sftp storage account

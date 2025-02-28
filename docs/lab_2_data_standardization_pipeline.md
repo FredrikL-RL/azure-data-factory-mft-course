@@ -5,8 +5,8 @@ Build a Parametrized Data Standardization Pipeline.
 
 ### Requirements
 - data transferred as below with one data flow
-    - SFTP stores/{todays_date}/Online to .../standardize/online in DLS
-    - SFTP outbound/landing_customer_orders/stores to standardized/customer/
+    - SFTP stores/{todays_date}/Online to DLS .../standardize/onlines
+    - SFTP outbound/landing_customer_orders/stores to DLS standardized/customer/
 - transformations
    - Remove store_id
    - Map coordinates to doubles

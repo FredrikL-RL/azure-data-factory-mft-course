@@ -13,7 +13,7 @@ Create automated failure notifications and setup logging
 ### 1. Configure Storage Account Permissions
 - Access IAM for dlsadfcourselognamedev001
 - Assign roles to data factory:
-  - Storage Blob Contributor
+  - Storage Blob Data Contributor
   - Storage Blob Data Reader
 
 ### 2. Setup Logging Infrastructure
