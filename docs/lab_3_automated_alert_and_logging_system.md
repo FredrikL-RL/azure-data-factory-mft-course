@@ -26,7 +26,9 @@ Create automated failure notifications and setup logging
 - JSON dataset sink:
   - Point to inbound/order_items in DLS
 
-### 4. Configure Copy Activity Logging
+### 4. Make new pipeline
+- create new pipeline and copy activity inside of it
+- use above datasets
 - Enable log setting in copy activity
 - Specify log container
 - Check skip incompatible rows
