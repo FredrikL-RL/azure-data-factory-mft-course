@@ -24,7 +24,7 @@ Create automated failure notifications and setup logging
 - CSV dataset source: 
   - Point to landing_customer_orders folder in SFTP
 - JSON dataset sink:
-  - Point to inbound/order_items
+  - Point to inbound/order_items in DLS
 
 ### 4. Configure Copy Activity Logging
 - Enable log setting in copy activity
