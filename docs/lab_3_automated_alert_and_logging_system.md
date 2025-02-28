@@ -21,9 +21,9 @@ Create automated failure notifications and setup logging
 - Create linked service to DLS logging storage account
 
 ### 3. Create Datasets
-- CSV dataset: 
+- CSV dataset source: 
   - Point to landing_customer_orders folder in SFTP
-- JSON dataset:
+- JSON dataset sink:
   - Point to inbound/order_items
 
 ### 4. Configure Copy Activity Logging
