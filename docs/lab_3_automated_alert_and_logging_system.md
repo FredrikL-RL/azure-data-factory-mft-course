@@ -29,6 +29,7 @@ Create automated failure notifications and setup logging
 ### 4. Make new pipeline
 - create new pipeline and copy activity inside of it
 - use above datasets
+- import mapping and set quantity column to be cast to int
 - Enable log setting in copy activity
 - Specify log container
 - Check skip incompatible rows
